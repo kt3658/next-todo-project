@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useRecoilState } from "recoil";
 import { todoState } from "../components/atoms";
-import Link from "next/link";
-
+import { db } from "../lib/firebase";
+import { NewTodo } from "../components/NewTodo";
 // 修正済み（22.7.24）
 const Create = () => {
 
@@ -18,7 +18,6 @@ const Create = () => {
     setNewDate(e.target.value);
   };
 
-
   const handleAddTodo = (todoTitle) => {
     console.log("todoTitle = ", todoTitle);
     if (todoTitle === "") return;
@@ -31,30 +30,27 @@ const Create = () => {
         date: newDate,
         status: "notStarted",
       },
-    ]
-    );
+    ]);
+
+    db.collection("todos").add({
+      id: Number(recoilTodos.length + 1),
+      title: todoTitle,
+      date: newDate,
+      status: "notStarted",
+    });
+
     setTodoTitle("");
     setNewDate("");
   };
   return (
     <>
-    <div className="input-area">
-      <input
-        type="text"
-        label="タイトル"
-        placeholder="Todoを入力"
-        className="input"
-        value={todoTitle}
-        onChange={handleAddFormChanges}
+      <NewTodo 
+      todoTitle={todoTitle}
+      handleAddFormChanges={handleAddFormChanges}
+      handleDateChanges={handleDateChanges}
+      handleAddTodo={handleAddTodo}
+      recoilTodos={recoilTodos}
       />
-      <label className="date-limit">
-        <span className="limit-text">期限: </span><input type="date" onChange={handleDateChanges} />
-      </label>
-      <Link href={{ pathname: "/", query: { title: recoilTodos  } }}>
-        <button className="add-button" onClick={() => handleAddTodo(todoTitle)}>保存</button>
-      </Link>
-
-    </div>
     </>
   )
 }
